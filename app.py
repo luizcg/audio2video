@@ -120,25 +120,7 @@ class ConversionWorker(QThread):
         self.all_completed.emit()
 
 
-class DropAreaMixin:
-    """Mixin for drag & drop support."""
-    
-    def setup_drop(self):
-        """Enable drag & drop."""
-        self.setAcceptDrops(True)
-    
-    def dragEnterEvent(self, event: QDragEnterEvent):
-        """Handle drag enter."""
-        if event.mimeData().hasUrls():
-            event.acceptProposedAction()
-    
-    def dragMoveEvent(self, event):
-        """Handle drag move."""
-        if event.mimeData().hasUrls():
-            event.acceptProposedAction()
-
-
-class MainWindow(QMainWindow, DropAreaMixin):
+class MainWindow(QMainWindow):
     """Main application window."""
     
     def __init__(self):
@@ -154,7 +136,7 @@ class MainWindow(QMainWindow, DropAreaMixin):
         self.is_converting = False
         
         self.init_ui()
-        self.setup_drop()
+        self.setAcceptDrops(True)
         self._load_last_cover_image()
     
     def _get_initial_output_folder(self) -> Path:
@@ -398,6 +380,20 @@ class MainWindow(QMainWindow, DropAreaMixin):
         """Handle open on finish checkbox change."""
         self.config.open_folder_on_finish = state == Qt.Checked
         save_config(self.config)
+    
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        """Handle drag enter - accept if has URLs."""
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+    
+    def dragMoveEvent(self, event):
+        """Handle drag move - keep accepting."""
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+        else:
+            event.ignore()
     
     def dropEvent(self, event: QDropEvent):
         """Handle file drop."""
