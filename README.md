@@ -89,40 +89,78 @@ python app.py
 - **Resolução**: 1280x720 (HD)
 - **Taxa de quadros**: 30 FPS
 
+## Funcionalidades Extras (Sprint 2)
+
+- **Drag & Drop**: Arraste imagens para definir capa, ou áudios/pastas para adicionar à lista
+- **Painel de Logs**: Visualize o progresso detalhado da conversão
+- **Menu de Contexto**: Clique direito em um item para opções adicionais
+- **Botão Cancelar**: Interrompa a conversão a qualquer momento
+- **Persistência**: O aplicativo lembra suas configurações
+
 ## Estrutura do projeto
 
 ```
 audio-converter/
-├── app.py           # Interface gráfica principal
-├── converter.py     # Lógica de conversão com FFmpeg
-├── utils.py         # Funções utilitárias
-├── requirements.txt # Dependências Python
-├── bin/             # Pasta para ffmpeg.exe e ffprobe.exe
-│   └── .gitkeep
-├── docs/            # Documentação das sprints
-│   ├── sprint1.md
-│   ├── sprint2.md
-│   └── sprint3.md
-└── README.md        # Este arquivo
+├── app.py              # Interface gráfica principal
+├── converter.py        # Lógica de conversão com FFmpeg
+├── config.py           # Gerenciamento de configurações
+├── utils.py            # Funções utilitárias
+├── requirements.txt    # Dependências Python
+├── Audio2Video.spec    # Configuração do PyInstaller
+├── build.bat           # Script de build (Windows)
+├── bin/                # FFmpeg binaries (não incluídos)
+├── assets/             # Ícones e recursos
+├── installer/          # Script do Inno Setup
+├── LICENSES/           # Licenças de terceiros
+└── docs/               # Documentação
 ```
 
-## Gerar executável com PyInstaller
+## Gerar executável (Windows)
 
-Para distribuir o aplicativo sem necessidade de Python instalado:
+### Método 1: Script automático
+
+```batch
+build.bat
+```
+
+### Método 2: Manual
 
 ```bash
 pip install pyinstaller
-
-pyinstaller --name "ConversorAudioVideo" \
-            --windowed \
-            --add-data "bin;bin" \
-            --icon "icon.ico" \
-            app.py
+pyinstaller Audio2Video.spec --noconfirm
 ```
 
-O executável será gerado na pasta `dist/ConversorAudioVideo/`.
+O executável será gerado em `dist/Audio2Video/`.
 
-**Nota**: Certifique-se de que `ffmpeg.exe` e `ffprobe.exe` estejam na pasta `bin/` antes de gerar o executável.
+### Pré-requisitos para o build
+
+1. **FFmpeg**: Baixe de https://www.gyan.dev/ffmpeg/builds/
+2. Copie `ffmpeg.exe` e `ffprobe.exe` para a pasta `bin/`
+3. (Opcional) Adicione um ícone `assets/icon.ico`
+
+## Criar instalador Windows
+
+Após gerar o executável:
+
+1. Instale o [Inno Setup](https://jrsoftware.org/isinfo.php)
+2. Abra `installer/Audio2Video.iss` no Inno Setup
+3. Clique em **Build > Compile**
+4. O instalador será gerado em `dist/Audio2Video_Instalador_v1.0.0.exe`
+
+## Versão Portátil vs Instalador
+
+| Versão | Descrição |
+|--------|-----------|
+| **Portátil** (`dist/Audio2Video/`) | Pasta completa, pode ser copiada para qualquer lugar |
+| **Instalador** (`.exe`) | Instala no Windows, cria atalhos, permite desinstalação |
+
+## One-Folder vs One-File
+
+O projeto usa **one-folder** (recomendado):
+- ✅ Inicia mais rápido
+- ✅ Atualizações mais fáceis
+- ✅ Menos problemas com antivírus
+- ❌ Múltiplos arquivos (mas pode zipar)
 
 ## Aviso sobre o Windows SmartScreen
 
@@ -151,6 +189,19 @@ Este aviso é normal para aplicativos desenvolvidos independentemente e não ind
 ### A interface congela
 - Isso não deveria acontecer, pois as conversões rodam em thread separada
 - Se ocorrer, reinicie o aplicativo e reporte o problema
+
+## Licenças de Terceiros
+
+Este aplicativo inclui os seguintes componentes:
+
+| Componente | Licença | Website |
+|------------|---------|---------|
+| **FFmpeg** | LGPL 2.1+ | https://ffmpeg.org/ |
+| **PySide6** | LGPL 3.0 | https://www.qt.io/qt-for-python |
+| **Python** | PSF License | https://www.python.org/ |
+
+Os binários do FFmpeg (`ffmpeg.exe`, `ffprobe.exe`) são incluídos sem modificações.
+Veja a pasta `LICENSES/` para os textos completos das licenças.
 
 ## Licença
 
