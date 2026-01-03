@@ -2,27 +2,38 @@
 Audio to Video Converter - Main GUI Application
 Converts audio files to MPEG video using a cover image.
 All user-facing text in Brazilian Portuguese (PT-BR).
+
+Sprint 2 Features:
+- Drag & drop support
+- Log panel
+- Context menu
+- Cancel button
+- Config persistence
+- Global progress
 """
 
 import sys
+import subprocess
+import platform
 from pathlib import Path
 from typing import Optional, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QFileDialog, QTableWidget, QTableWidgetItem,
     QProgressBar, QMessageBox, QHeaderView, QAbstractItemView,
-    QGroupBox, QSizePolicy
+    QGroupBox, QSizePolicy, QTextEdit, QMenu, QCheckBox, QSplitter
 )
-from PySide6.QtCore import Qt, QThread, Signal, QSize
-from PySide6.QtGui import QPixmap, QIcon
+from PySide6.QtCore import Qt, QThread, Signal, QMimeData, QUrl
+from PySide6.QtGui import QPixmap, QDragEnterEvent, QDropEvent, QAction, QColor
 
 from converter import convert_audio_to_video, ConversionResult
 from utils import (
     get_default_output_folder, ensure_output_folder, get_unique_output_path,
     is_supported_audio_file, is_supported_image_file
 )
+from config import load_config, save_config, AppConfig
 
 
 # Status constants (Portuguese)
@@ -46,15 +57,15 @@ class AudioItem:
 class ConversionWorker(QThread):
     """Worker thread for running conversions without freezing the UI."""
     
-    # Signals
     progress_updated = Signal(int, float)  # row, progress (0.0-1.0)
     status_updated = Signal(int, str)  # row, status
     conversion_completed = Signal(int, bool, str, str)  # row, success, output_path, error_message
+    log_message = Signal(str)  # log message
     all_completed = Signal()
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.items: List[tuple] = []  # List of (row, audio_path, cover_path, output_path)
+        self.items: List[tuple] = []
         self.cancelled = False
         self.current_row = -1
     
@@ -76,6 +87,7 @@ class ConversionWorker(QThread):
             
             self.current_row = row
             self.status_updated.emit(row, STATUS_CONVERTING)
+            self.log_message.emit(f"[INÍCIO] Convertendo: {audio_path.name}")
             
             def progress_callback(progress: float):
                 self.progress_updated.emit(row, progress)
@@ -94,33 +106,76 @@ class ConversionWorker(QThread):
             if self.cancelled:
                 self.status_updated.emit(row, STATUS_CANCELLED)
                 self.conversion_completed.emit(row, False, "", "Conversão cancelada")
+                self.log_message.emit(f"[CANCELADO] {audio_path.name}")
             elif result.success:
                 self.status_updated.emit(row, STATUS_COMPLETED)
                 self.conversion_completed.emit(row, True, str(result.output_path), "")
+                self.log_message.emit(f"[CONCLUÍDO] {audio_path.name} → {output_path.name}")
             else:
                 self.status_updated.emit(row, STATUS_ERROR)
                 self.conversion_completed.emit(row, False, "", result.error_message or "Erro desconhecido")
+                self.log_message.emit(f"[ERRO] {audio_path.name}: {result.error_message}")
         
+        self.log_message.emit("[FIM] Todas as conversões finalizadas.")
         self.all_completed.emit()
 
 
-class MainWindow(QMainWindow):
+class DropAreaMixin:
+    """Mixin for drag & drop support."""
+    
+    def setup_drop(self):
+        """Enable drag & drop."""
+        self.setAcceptDrops(True)
+    
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        """Handle drag enter."""
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+    
+    def dragMoveEvent(self, event):
+        """Handle drag move."""
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+
+
+class MainWindow(QMainWindow, DropAreaMixin):
     """Main application window."""
     
     def __init__(self):
         super().__init__()
         
+        # Load config
+        self.config = load_config()
+        
         self.cover_image_path: Optional[Path] = None
-        self.output_folder: Path = get_default_output_folder()
+        self.output_folder: Path = self._get_initial_output_folder()
         self.audio_items: List[AudioItem] = []
         self.worker: Optional[ConversionWorker] = None
         self.is_converting = False
         
         self.init_ui()
+        self.setup_drop()
+        self._load_last_cover_image()
+    
+    def _get_initial_output_folder(self) -> Path:
+        """Get the initial output folder from config or default."""
+        if self.config.last_output_folder:
+            folder = Path(self.config.last_output_folder)
+            if folder.exists() or folder.parent.exists():
+                return folder
+        return get_default_output_folder()
+    
+    def _load_last_cover_image(self):
+        """Load the last used cover image from config."""
+        if self.config.last_cover_image:
+            path = Path(self.config.last_cover_image)
+            if path.exists():
+                self.set_cover_image(path, save_to_config=False)
     
     def init_ui(self):
         """Initialize the user interface."""
         self.setWindowTitle("Conversor de Áudio para Vídeo")
+        self.resize(self.config.window_width, self.config.window_height)
         self.setMinimumSize(800, 600)
         
         # Central widget
@@ -146,7 +201,7 @@ class MainWindow(QMainWindow):
                 background-color: #f9f9f9;
             }
         """)
-        self.cover_preview.setText("Sem imagem")
+        self.cover_preview.setText("Arraste uma\nimagem aqui")
         cover_layout.addWidget(self.cover_preview)
         
         cover_info_layout = QVBoxLayout()
@@ -163,7 +218,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(cover_group)
         
         # Audio files section
-        audio_group = QGroupBox("Arquivos de Áudio")
+        audio_group = QGroupBox("Arquivos de Áudio (arraste arquivos ou pastas aqui)")
         audio_layout = QVBoxLayout(audio_group)
         
         # Audio buttons
@@ -184,9 +239,14 @@ class MainWindow(QMainWindow):
         audio_buttons_layout.addWidget(self.btn_clear_list)
         
         audio_buttons_layout.addStretch()
+        
+        # Global progress label
+        self.global_progress_label = QLabel("")
+        audio_buttons_layout.addWidget(self.global_progress_label)
+        
         audio_layout.addLayout(audio_buttons_layout)
         
-        # Audio table
+        # Audio table with context menu
         self.table = QTableWidget()
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(["Arquivo", "Status", "Progresso", "Arquivo de saída"])
@@ -198,6 +258,8 @@ class MainWindow(QMainWindow):
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setAlternatingRowColors(True)
         self.table.itemSelectionChanged.connect(self.on_selection_changed)
+        self.table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self.show_context_menu)
         audio_layout.addWidget(self.table)
         
         main_layout.addWidget(audio_group, 1)
@@ -218,11 +280,76 @@ class MainWindow(QMainWindow):
         self.btn_open_output.clicked.connect(self.open_output_folder)
         output_layout.addWidget(self.btn_open_output)
         
+        self.chk_open_on_finish = QCheckBox("Abrir pasta ao finalizar")
+        self.chk_open_on_finish.setChecked(self.config.open_folder_on_finish)
+        self.chk_open_on_finish.stateChanged.connect(self._on_open_on_finish_changed)
+        output_layout.addWidget(self.chk_open_on_finish)
+        
         main_layout.addWidget(output_group)
+        
+        # Log panel (collapsible)
+        self.log_group = QGroupBox("Logs")
+        self.log_group.setCheckable(True)
+        self.log_group.setChecked(self.config.logs_panel_visible)
+        self.log_group.toggled.connect(self._on_log_panel_toggled)
+        log_layout = QVBoxLayout(self.log_group)
+        
+        self.log_text = QTextEdit()
+        self.log_text.setReadOnly(True)
+        self.log_text.setMaximumHeight(150)
+        self.log_text.setStyleSheet("QTextEdit { font-family: monospace; font-size: 11px; }")
+        log_layout.addWidget(self.log_text)
+        
+        log_buttons = QHBoxLayout()
+        self.btn_copy_logs = QPushButton("Copiar logs")
+        self.btn_copy_logs.clicked.connect(self.copy_logs)
+        log_buttons.addWidget(self.btn_copy_logs)
+        
+        self.btn_save_logs = QPushButton("Salvar logs")
+        self.btn_save_logs.clicked.connect(self.save_logs)
+        log_buttons.addWidget(self.btn_save_logs)
+        
+        self.btn_clear_logs = QPushButton("Limpar logs")
+        self.btn_clear_logs.clicked.connect(self.clear_logs)
+        log_buttons.addWidget(self.btn_clear_logs)
+        
+        log_buttons.addStretch()
+        log_layout.addLayout(log_buttons)
+        
+        # Initially hide/show based on config
+        self.log_text.setVisible(self.config.logs_panel_visible)
+        for i in range(log_buttons.count()):
+            widget = log_buttons.itemAt(i).widget()
+            if widget:
+                widget.setVisible(self.config.logs_panel_visible)
+        
+        main_layout.addWidget(self.log_group)
         
         # Control buttons
         control_layout = QHBoxLayout()
         control_layout.addStretch()
+        
+        self.btn_cancel = QPushButton("Cancelar")
+        self.btn_cancel.setMinimumWidth(100)
+        self.btn_cancel.setEnabled(False)
+        self.btn_cancel.clicked.connect(self.cancel_conversion)
+        self.btn_cancel.setStyleSheet("""
+            QPushButton {
+                background-color: #f44336;
+                color: white;
+                font-weight: bold;
+                padding: 10px 20px;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #da190b;
+            }
+            QPushButton:disabled {
+                background-color: #cccccc;
+                color: #666666;
+            }
+        """)
+        control_layout.addWidget(self.btn_cancel)
         
         self.btn_start = QPushButton("Iniciar")
         self.btn_start.setMinimumWidth(120)
@@ -249,7 +376,184 @@ class MainWindow(QMainWindow):
         main_layout.addLayout(control_layout)
         
         # Status bar
-        self.statusBar().showMessage("Pronto. Selecione uma imagem de capa e adicione arquivos de áudio.")
+        self.statusBar().showMessage("Pronto. Arraste arquivos ou selecione uma imagem de capa.")
+    
+    def _on_log_panel_toggled(self, checked: bool):
+        """Handle log panel toggle."""
+        self.log_text.setVisible(checked)
+        # Find log buttons and toggle visibility
+        log_layout = self.log_group.layout()
+        if log_layout and log_layout.count() > 1:
+            buttons_layout = log_layout.itemAt(1).layout()
+            if buttons_layout:
+                for i in range(buttons_layout.count()):
+                    widget = buttons_layout.itemAt(i).widget()
+                    if widget:
+                        widget.setVisible(checked)
+        
+        self.config.logs_panel_visible = checked
+        save_config(self.config)
+    
+    def _on_open_on_finish_changed(self, state: int):
+        """Handle open on finish checkbox change."""
+        self.config.open_folder_on_finish = state == Qt.Checked
+        save_config(self.config)
+    
+    def dropEvent(self, event: QDropEvent):
+        """Handle file drop."""
+        urls = event.mimeData().urls()
+        
+        images_added = 0
+        audios_added = 0
+        
+        for url in urls:
+            path = Path(url.toLocalFile())
+            
+            if path.is_dir():
+                # Scan folder recursively for audio files
+                for file_path in path.rglob("*"):
+                    if file_path.is_file() and is_supported_audio_file(file_path):
+                        self.add_audio_item(file_path)
+                        audios_added += 1
+            elif path.is_file():
+                if is_supported_image_file(path):
+                    self.set_cover_image(path)
+                    images_added += 1
+                elif is_supported_audio_file(path):
+                    self.add_audio_item(path)
+                    audios_added += 1
+                else:
+                    self.add_log(f"[AVISO] Arquivo não suportado: {path.name}")
+        
+        if images_added > 0 or audios_added > 0:
+            msg_parts = []
+            if images_added > 0:
+                msg_parts.append(f"{images_added} imagem(s)")
+            if audios_added > 0:
+                msg_parts.append(f"{audios_added} áudio(s)")
+            self.statusBar().showMessage(f"Adicionado: {', '.join(msg_parts)}")
+        
+        self.update_buttons_state()
+        event.acceptProposedAction()
+    
+    def show_context_menu(self, position):
+        """Show context menu for table row."""
+        row = self.table.rowAt(position.y())
+        if row < 0 or row >= len(self.audio_items):
+            return
+        
+        item = self.audio_items[row]
+        menu = QMenu(self)
+        
+        # Open output file
+        if item.output_path and item.output_path.exists():
+            action_open_file = QAction("Abrir arquivo de saída", self)
+            action_open_file.triggered.connect(lambda: self.open_file(item.output_path))
+            menu.addAction(action_open_file)
+        
+        # Open output folder
+        action_open_folder = QAction("Abrir pasta de saída", self)
+        action_open_folder.triggered.connect(self.open_output_folder)
+        menu.addAction(action_open_folder)
+        
+        menu.addSeparator()
+        
+        # Retry (only for error/cancelled items)
+        if item.status in (STATUS_ERROR, STATUS_CANCELLED):
+            action_retry = QAction("Tentar novamente", self)
+            action_retry.triggered.connect(lambda: self.retry_item(row))
+            menu.addAction(action_retry)
+        
+        # Remove
+        if not self.is_converting:
+            action_remove = QAction("Remover", self)
+            action_remove.triggered.connect(lambda: self.remove_row(row))
+            menu.addAction(action_remove)
+        
+        menu.exec(self.table.viewport().mapToGlobal(position))
+    
+    def open_file(self, path: Path):
+        """Open a file with the default application."""
+        try:
+            if platform.system() == "Windows":
+                subprocess.run(["start", "", str(path)], shell=True, check=False)
+            elif platform.system() == "Darwin":
+                subprocess.run(["open", str(path)], check=False)
+            else:
+                subprocess.run(["xdg-open", str(path)], check=False)
+        except Exception as e:
+            QMessageBox.warning(self, "Erro", f"Não foi possível abrir o arquivo: {e}")
+    
+    def retry_item(self, row: int):
+        """Retry conversion for a specific item."""
+        if 0 <= row < len(self.audio_items):
+            item = self.audio_items[row]
+            item.status = STATUS_QUEUED
+            item.progress = 0.0
+            item.output_path = None
+            item.error_message = None
+            
+            self.table.item(row, 1).setText(STATUS_QUEUED)
+            self.table.item(row, 1).setForeground(Qt.black)
+            self.table.item(row, 3).setText("")
+            progress_bar = self.table.cellWidget(row, 2)
+            if progress_bar:
+                progress_bar.setValue(0)
+            
+            self.statusBar().showMessage(f"'{item.file_path.name}' marcado para tentar novamente.")
+            self.update_buttons_state()
+    
+    def remove_row(self, row: int):
+        """Remove a specific row from the table."""
+        if 0 <= row < len(self.audio_items):
+            self.table.removeRow(row)
+            del self.audio_items[row]
+            self.update_buttons_state()
+    
+    def add_log(self, message: str):
+        """Add a message to the log panel."""
+        self.log_text.append(message)
+        # Auto-scroll to bottom
+        scrollbar = self.log_text.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
+    
+    def copy_logs(self):
+        """Copy logs to clipboard."""
+        clipboard = QApplication.clipboard()
+        clipboard.setText(self.log_text.toPlainText())
+        self.statusBar().showMessage("Logs copiados para a área de transferência.")
+    
+    def save_logs(self):
+        """Save logs to a file."""
+        log_path = self.output_folder / "conversion_log.txt"
+        try:
+            ensure_output_folder(self.output_folder)
+            with open(log_path, "w", encoding="utf-8") as f:
+                f.write(self.log_text.toPlainText())
+            self.statusBar().showMessage(f"Logs salvos em: {log_path}")
+        except Exception as e:
+            QMessageBox.warning(self, "Erro", f"Não foi possível salvar os logs: {e}")
+    
+    def clear_logs(self):
+        """Clear the log panel."""
+        self.log_text.clear()
+    
+    def cancel_conversion(self):
+        """Cancel the current conversion."""
+        if self.worker:
+            reply = QMessageBox.question(
+                self,
+                "Cancelar conversão",
+                "Deseja cancelar a conversão em andamento?\n\n"
+                "O arquivo atual será interrompido e marcado como 'Cancelado'.",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            
+            if reply == QMessageBox.Yes:
+                self.worker.cancel()
+                self.add_log("[AVISO] Cancelamento solicitado pelo usuário...")
+                self.statusBar().showMessage("Cancelando conversão...")
     
     def select_cover_image(self):
         """Open file dialog to select cover image."""
@@ -264,7 +568,7 @@ class MainWindow(QMainWindow):
         if file_path:
             self.set_cover_image(Path(file_path))
     
-    def set_cover_image(self, path: Path):
+    def set_cover_image(self, path: Path, save_to_config: bool = True):
         """Set the cover image."""
         if not path.exists():
             QMessageBox.warning(
@@ -294,6 +598,11 @@ class MainWindow(QMainWindow):
                 Qt.SmoothTransformation
             )
             self.cover_preview.setPixmap(scaled)
+        
+        # Save to config
+        if save_to_config:
+            self.config.last_cover_image = str(path)
+            save_config(self.config)
         
         self.update_start_button_state()
         self.statusBar().showMessage(f"Imagem de capa selecionada: {path.name}")
@@ -326,6 +635,11 @@ class MainWindow(QMainWindow):
     
     def add_audio_item(self, path: Path):
         """Add an audio item to the table."""
+        # Check if already added
+        for item in self.audio_items:
+            if item.file_path == path:
+                return  # Skip duplicates
+        
         item = AudioItem(file_path=path)
         self.audio_items.append(item)
         
@@ -398,6 +712,7 @@ class MainWindow(QMainWindow):
             self.table.setRowCount(0)
             self.audio_items.clear()
             self.update_buttons_state()
+            self.update_global_progress()
             self.statusBar().showMessage("Lista limpa.")
     
     def select_output_folder(self):
@@ -411,13 +726,15 @@ class MainWindow(QMainWindow):
         if folder:
             self.output_folder = Path(folder)
             self.output_label.setText(str(self.output_folder))
+            
+            # Save to config
+            self.config.last_output_folder = str(self.output_folder)
+            save_config(self.config)
+            
             self.statusBar().showMessage(f"Pasta de saída alterada para: {self.output_folder}")
     
     def open_output_folder(self):
         """Open the output folder in file explorer."""
-        import subprocess
-        import platform
-        
         folder = self.output_folder
         if not folder.exists():
             try:
@@ -467,6 +784,20 @@ class MainWindow(QMainWindow):
         )
         self.btn_start.setEnabled(can_start)
     
+    def update_global_progress(self):
+        """Update the global progress label."""
+        if not self.audio_items:
+            self.global_progress_label.setText("")
+            return
+        
+        completed = sum(1 for item in self.audio_items if item.status == STATUS_COMPLETED)
+        total = len(self.audio_items)
+        
+        if completed > 0 or self.is_converting:
+            self.global_progress_label.setText(f"{completed} de {total} concluído(s)")
+        else:
+            self.global_progress_label.setText(f"{total} arquivo(s)")
+    
     def start_conversion(self):
         """Start the conversion process."""
         if not self.cover_image_path:
@@ -514,6 +845,7 @@ class MainWindow(QMainWindow):
                 
                 # Update table
                 self.table.item(row, 1).setText(STATUS_QUEUED)
+                self.table.item(row, 1).setForeground(Qt.black)
                 self.table.item(row, 3).setText("")
                 progress_bar = self.table.cellWidget(row, 2)
                 if progress_bar:
@@ -533,6 +865,10 @@ class MainWindow(QMainWindow):
         self.btn_add_audio.setEnabled(False)
         self.btn_select_cover.setEnabled(False)
         self.btn_select_output.setEnabled(False)
+        self.btn_cancel.setEnabled(True)
+        self.update_global_progress()
+        
+        self.add_log(f"[INÍCIO] Iniciando conversão de {len(items_to_convert)} arquivo(s)...")
         self.statusBar().showMessage("Iniciando conversão...")
         
         # Create and start worker
@@ -541,6 +877,7 @@ class MainWindow(QMainWindow):
         self.worker.progress_updated.connect(self.on_progress_updated)
         self.worker.status_updated.connect(self.on_status_updated)
         self.worker.conversion_completed.connect(self.on_conversion_completed)
+        self.worker.log_message.connect(self.add_log)
         self.worker.all_completed.connect(self.on_all_completed)
         self.worker.start()
     
@@ -570,6 +907,8 @@ class MainWindow(QMainWindow):
                 status_item.setForeground(Qt.blue)
             else:
                 status_item.setForeground(Qt.black)
+            
+            self.update_global_progress()
     
     def on_conversion_completed(self, row: int, success: bool, output_path: str, error_message: str):
         """Handle conversion completion for a single item."""
@@ -592,6 +931,7 @@ class MainWindow(QMainWindow):
         self.btn_add_audio.setEnabled(True)
         self.btn_select_cover.setEnabled(True)
         self.btn_select_output.setEnabled(True)
+        self.btn_cancel.setEnabled(False)
         
         # Count results
         completed = sum(1 for item in self.audio_items if item.status == STATUS_COMPLETED)
@@ -605,6 +945,11 @@ class MainWindow(QMainWindow):
             message += f", {cancelled} cancelado(s)"
         
         self.statusBar().showMessage(message)
+        self.update_global_progress()
+        
+        # Open folder on finish if enabled
+        if self.config.open_folder_on_finish and completed > 0:
+            self.open_output_folder()
         
         if errors > 0:
             QMessageBox.warning(
@@ -615,13 +960,27 @@ class MainWindow(QMainWindow):
                 f"• {errors} arquivo(s) com erro\n\n"
                 f"Verifique a coluna 'Arquivo de saída' para mais detalhes."
             )
-        elif completed > 0:
+        elif completed > 0 and not self.config.open_folder_on_finish:
             QMessageBox.information(
                 self,
                 "Conversão concluída",
                 f"Todos os {completed} arquivo(s) foram convertidos com sucesso!\n\n"
                 f"Os vídeos foram salvos em:\n{self.output_folder}"
             )
+    
+    def closeEvent(self, event):
+        """Handle window close event."""
+        # Save window size
+        self.config.window_width = self.width()
+        self.config.window_height = self.height()
+        save_config(self.config)
+        
+        # Cancel any running conversion
+        if self.worker and self.worker.isRunning():
+            self.worker.cancel()
+            self.worker.wait(3000)
+        
+        event.accept()
 
 
 def main():
