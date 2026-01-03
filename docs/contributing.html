@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Como contribuir para o Audio2Video. Guia para desenvolvedores.">
+  <title>Contribuir - Audio2Video</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <span>🎵</span>
+        <span>Audio2Video</span>
+      </a>
+      <button class="nav-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="navbar-nav">
+        <li><a href="index.html">Início</a></li>
+        <li><a href="download.html">Baixar</a></li>
+        <li><a href="docs.html">Documentação</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="contributing.html" class="active">Contribuir</a></li>
+        <li><a href="licenses.html">Licenças</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Contributing Section -->
+  <section class="section">
+    <div class="container content">
+      <h1>Como Contribuir</h1>
+      <p>
+        O Audio2Video é um projeto de código aberto e contribuições são bem-vindas!
+        Este guia explica como configurar o ambiente de desenvolvimento e enviar suas contribuições.
+      </p>
+
+      <h2 id="ambiente">Configurando o Ambiente</h2>
+
+      <h3>Pré-requisitos</h3>
+      <ul>
+        <li>Python 3.9 ou superior</li>
+        <li>Git</li>
+        <li>FFmpeg (para testes locais)</li>
+      </ul>
+
+      <h3>Passo 1: Clone o Repositório</h3>
+      <pre><code>git clone https://github.com/SEU-USUARIO/audio-converter.git
+cd audio-converter</code></pre>
+
+      <h3>Passo 2: Crie um Ambiente Virtual</h3>
+      <pre><code># Windows
+python -m venv venv
+venv\Scripts\activate
+
+# macOS / Linux
+python3 -m venv venv
+source venv/bin/activate</code></pre>
+
+      <h3>Passo 3: Instale as Dependências</h3>
+      <pre><code>pip install -r requirements.txt</code></pre>
+
+      <h3>Passo 4: Configure o FFmpeg</h3>
+      <p>
+        O aplicativo precisa do FFmpeg para funcionar. 
+        No desenvolvimento, você pode usar o FFmpeg do sistema:
+      </p>
+      <pre><code># macOS (Homebrew)
+brew install ffmpeg
+
+# Ubuntu / Debian
+sudo apt install ffmpeg
+
+# Windows
+# Baixe de https://www.gyan.dev/ffmpeg/builds/
+# Copie ffmpeg.exe e ffprobe.exe para a pasta bin/</code></pre>
+
+      <h3>Passo 5: Execute o Aplicativo</h3>
+      <pre><code>python app.py</code></pre>
+
+      <h2 id="estrutura">Estrutura do Projeto</h2>
+      <pre><code>audio-converter/
+├── app.py              # Interface gráfica (PySide6)
+├── converter.py        # Lógica de conversão FFmpeg
+├── config.py           # Gerenciamento de configurações
+├── utils.py            # Funções utilitárias
+├── requirements.txt    # Dependências Python
+├── Audio2Video.spec    # Configuração PyInstaller
+├── build.bat           # Script de build (Windows)
+├── bin/                # Binários FFmpeg (não versionados)
+├── assets/             # Ícones e recursos
+├── installer/          # Script Inno Setup
+├── LICENSES/           # Licenças de terceiros
+├── docs/               # Website (GitHub Pages)
+└── .github/
+    └── workflows/
+        └── build.yml   # GitHub Actions CI/CD</code></pre>
+
+      <h2 id="build">Gerando o Executável</h2>
+
+      <h3>Windows</h3>
+      <p>Certifique-se de ter o FFmpeg na pasta <code>bin/</code>:</p>
+      <pre><code># Usando o script
+build.bat
+
+# Ou manualmente
+pip install pyinstaller
+pyinstaller Audio2Video.spec --noconfirm</code></pre>
+
+      <h3>GitHub Actions</h3>
+      <p>
+        O projeto usa GitHub Actions para builds automáticos. 
+        Ao criar uma tag <code>v*</code>, o workflow:
+      </p>
+      <ol>
+        <li>Baixa o FFmpeg automaticamente</li>
+        <li>Gera o executável com PyInstaller</li>
+        <li>Cria um release no GitHub</li>
+      </ol>
+      <pre><code># Para criar um release
+git tag v1.0.0
+git push origin v1.0.0</code></pre>
+
+      <h2 id="pull-requests">Enviando Pull Requests</h2>
+
+      <h3>1. Fork o Repositório</h3>
+      <p>Clique em "Fork" no GitHub para criar sua cópia.</p>
+
+      <h3>2. Crie uma Branch</h3>
+      <pre><code>git checkout -b minha-feature</code></pre>
+
+      <h3>3. Faça suas Alterações</h3>
+      <p>Siga o estilo de código existente:</p>
+      <ul>
+        <li>Código em inglês (variáveis, funções, comentários)</li>
+        <li>Textos da interface em português</li>
+        <li>Use type hints quando possível</li>
+        <li>Docstrings para funções públicas</li>
+      </ul>
+
+      <h3>4. Teste suas Alterações</h3>
+      <p>Verifique se o aplicativo funciona corretamente:</p>
+      <pre><code>python app.py</code></pre>
+
+      <h3>5. Commit e Push</h3>
+      <pre><code>git add .
+git commit -m "feat: descrição da alteração"
+git push origin minha-feature</code></pre>
+
+      <h3>6. Abra um Pull Request</h3>
+      <p>
+        Vá ao GitHub e clique em "Compare & pull request".
+        Descreva suas alterações de forma clara.
+      </p>
+
+      <h2 id="issues">Reportando Problemas</h2>
+      <p>
+        Se encontrar um bug ou tiver uma sugestão, 
+        <a href="https://github.com/SEU-USUARIO/audio-converter/issues">abra uma issue</a>.
+      </p>
+      <p>Para bugs, inclua:</p>
+      <ul>
+        <li>Descrição do problema</li>
+        <li>Passos para reproduzir</li>
+        <li>Comportamento esperado vs atual</li>
+        <li>Versão do sistema operacional</li>
+        <li>Logs do aplicativo (se disponível)</li>
+      </ul>
+
+      <div class="alert alert-success" style="margin-top: 2rem;">
+        <strong>🎉 Obrigado por contribuir!</strong><br>
+        Toda contribuição, seja código, documentação ou feedback, é muito apreciada.
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-copy">
+          Audio2Video © 2024 - Licença MIT<br>
+          <small>Feito no Brasil 🇧🇷</small>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/SEU-USUARIO/audio-converter">GitHub</a>
+          <a href="licenses.html">Licenças</a>
+          <a href="faq.html#privacidade">Privacidade</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

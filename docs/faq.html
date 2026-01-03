@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Perguntas frequentes sobre o Audio2Video. Formatos suportados, privacidade e mais.">
+  <title>FAQ - Audio2Video</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <span>🎵</span>
+        <span>Audio2Video</span>
+      </a>
+      <button class="nav-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="navbar-nav">
+        <li><a href="index.html">Início</a></li>
+        <li><a href="download.html">Baixar</a></li>
+        <li><a href="docs.html">Documentação</a></li>
+        <li><a href="faq.html" class="active">FAQ</a></li>
+        <li><a href="contributing.html">Contribuir</a></li>
+        <li><a href="licenses.html">Licenças</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- FAQ Section -->
+  <section class="section">
+    <div class="container">
+      <h1 class="section-title">Perguntas Frequentes</h1>
+      <p class="section-subtitle">Respostas para as dúvidas mais comuns sobre o Audio2Video</p>
+
+      <div class="faq-list">
+
+        <div class="faq-item">
+          <h3 class="faq-question">🎵 Quais formatos de áudio são suportados?</h3>
+          <p class="faq-answer">
+            O Audio2Video suporta os formatos mais comuns: 
+            <strong>MP3, M4A, WAV, AAC, FLAC, OGG, WMA e OPUS</strong>.
+            Se você tiver um formato diferente, tente converter para MP3 antes.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">🖼️ Quais formatos de imagem são suportados?</h3>
+          <p class="faq-answer">
+            Para a imagem de capa, você pode usar: 
+            <strong>JPG, JPEG, PNG, BMP, GIF e WEBP</strong>.
+            Recomendamos JPG ou PNG com resolução de pelo menos 1280x720 pixels.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">📁 Onde os vídeos são salvos?</h3>
+          <p class="faq-answer">
+            Por padrão, os vídeos são salvos na pasta <code>Audio2Video_Exports</code> 
+            na sua Área de Trabalho. Você pode alterar a pasta de saída nas configurações do aplicativo.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">🎬 Qual é o formato do vídeo gerado?</h3>
+          <p class="faq-answer">
+            Os vídeos são gerados no formato <strong>MPEG (.mpg)</strong> com codec de vídeo MPEG-2, 
+            resolução 1280x720 (HD) e 30 FPS. O áudio é codificado em MP2.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">⚠️ Por que o Windows SmartScreen aparece?</h3>
+          <p class="faq-answer">
+            O aviso aparece porque o executável não possui assinatura digital (code signing), 
+            o que é normal para projetos independentes e de código aberto. 
+            O aplicativo é seguro - você pode verificar o código no GitHub.
+            <br><br>
+            Para continuar: clique em "Mais informações" → "Executar assim mesmo".
+          </p>
+        </div>
+
+        <div class="faq-item" id="privacidade">
+          <h3 class="faq-question">🔒 O aplicativo envia meus arquivos para algum lugar?</h3>
+          <p class="faq-answer">
+            <strong>Não!</strong> O Audio2Video funciona 100% offline. 
+            Seus arquivos nunca saem do seu computador. Não há coleta de dados, 
+            telemetria ou qualquer comunicação com servidores externos.
+            <br><br>
+            O código é aberto e você pode verificar isso pessoalmente no 
+            <a href="https://github.com/SEU-USUARIO/audio-converter">GitHub</a>.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">💻 O aplicativo funciona em Mac ou Linux?</h3>
+          <p class="faq-answer">
+            Atualmente, apenas a versão para Windows está disponível. 
+            No entanto, como o código é aberto e escrito em Python, 
+            você pode executá-lo diretamente no Mac ou Linux se tiver Python instalado.
+            Veja as instruções na página de <a href="contributing.html">Contribuição</a>.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">📦 Preciso do FFmpeg instalado?</h3>
+          <p class="faq-answer">
+            <strong>Não!</strong> O FFmpeg já vem incluído no pacote do aplicativo. 
+            Você não precisa instalar nada adicional.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">⚖️ Qual é a licença do aplicativo?</h3>
+          <p class="faq-answer">
+            O Audio2Video é distribuído sob a licença <strong>MIT</strong>, 
+            o que significa que você pode usá-lo, modificá-lo e distribuí-lo livremente.
+            <br><br>
+            O FFmpeg incluído é licenciado sob <strong>LGPL 2.1+</strong>.
+            Veja mais detalhes na página de <a href="licenses.html">Licenças</a>.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">🐛 Encontrei um bug. Como reporto?</h3>
+          <p class="faq-answer">
+            Abra uma <a href="https://github.com/SEU-USUARIO/audio-converter/issues">issue no GitHub</a> 
+            descrevendo o problema. Inclua:
+          </p>
+          <ul style="margin-top: 0.5rem; color: var(--color-text-muted);">
+            <li>O que você estava tentando fazer</li>
+            <li>O que aconteceu (erro, comportamento inesperado)</li>
+            <li>Versão do Windows</li>
+            <li>Logs do aplicativo (se possível)</li>
+          </ul>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">💡 Posso sugerir uma nova funcionalidade?</h3>
+          <p class="faq-answer">
+            Claro! Abra uma <a href="https://github.com/SEU-USUARIO/audio-converter/issues">issue no GitHub</a> 
+            com a tag "enhancement" descrevendo sua sugestão. 
+            Contribuições também são bem-vindas!
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-copy">
+          Audio2Video © 2024 - Licença MIT<br>
+          <small>Feito no Brasil 🇧🇷</small>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/SEU-USUARIO/audio-converter">GitHub</a>
+          <a href="licenses.html">Licenças</a>
+          <a href="faq.html#privacidade">Privacidade</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Informações de licença do Audio2Video e componentes de terceiros.">
+  <title>Licenças - Audio2Video</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <span>🎵</span>
+        <span>Audio2Video</span>
+      </a>
+      <button class="nav-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="navbar-nav">
+        <li><a href="index.html">Início</a></li>
+        <li><a href="download.html">Baixar</a></li>
+        <li><a href="docs.html">Documentação</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="contributing.html">Contribuir</a></li>
+        <li><a href="licenses.html" class="active">Licenças</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Licenses Section -->
+  <section class="section">
+    <div class="container content">
+      <h1>Licenças</h1>
+      <p>
+        O Audio2Video é um projeto de código aberto. Esta página contém informações 
+        sobre as licenças do projeto e dos componentes de terceiros utilizados.
+      </p>
+
+      <h2 id="projeto">Licença do Projeto</h2>
+      <div class="card">
+        <h3 class="card-title">Audio2Video</h3>
+        <p><strong>Licença:</strong> MIT</p>
+        <p>
+          O código do Audio2Video é distribuído sob a licença MIT, 
+          permitindo uso, modificação e distribuição livre.
+        </p>
+        <pre><code>MIT License
+
+Copyright (c) 2024 Audio2Video
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</code></pre>
+      </div>
+
+      <h2 id="terceiros">Componentes de Terceiros</h2>
+
+      <div class="card" style="margin-top: 1.5rem;">
+        <h3 class="card-title">FFmpeg</h3>
+        <p><strong>Licença:</strong> LGPL 2.1+</p>
+        <p><strong>Website:</strong> <a href="https://ffmpeg.org/">https://ffmpeg.org/</a></p>
+        <p>
+          FFmpeg é uma biblioteca e ferramenta de código aberto para processamento 
+          de áudio e vídeo. O Audio2Video inclui os binários do FFmpeg 
+          (<code>ffmpeg.exe</code> e <code>ffprobe.exe</code>) sem modificações.
+        </p>
+        <p>
+          Os binários são baixados de 
+          <a href="https://www.gyan.dev/ffmpeg/builds/">gyan.dev</a> (builds oficiais para Windows).
+        </p>
+        <div class="alert alert-info">
+          <strong>Sobre a LGPL:</strong>
+          <ul style="margin-top: 0.5rem;">
+            <li>Você pode usar o FFmpeg livremente</li>
+            <li>Você pode distribuir o FFmpeg junto com seu software</li>
+            <li>Se você modificar o FFmpeg, deve compartilhar as modificações</li>
+            <li>O Audio2Video usa o FFmpeg sem modificações</li>
+          </ul>
+        </div>
+        <p>
+          Texto completo da licença: 
+          <a href="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html">LGPL 2.1</a>
+        </p>
+      </div>
+
+      <div class="card" style="margin-top: 1.5rem;">
+        <h3 class="card-title">PySide6 (Qt for Python)</h3>
+        <p><strong>Licença:</strong> LGPL 3.0</p>
+        <p><strong>Website:</strong> <a href="https://www.qt.io/qt-for-python">https://www.qt.io/qt-for-python</a></p>
+        <p>
+          PySide6 é o binding oficial do Qt para Python, usado para criar 
+          a interface gráfica do Audio2Video.
+        </p>
+        <p>
+          Texto completo da licença: 
+          <a href="https://www.gnu.org/licenses/lgpl-3.0.html">LGPL 3.0</a>
+        </p>
+      </div>
+
+      <div class="card" style="margin-top: 1.5rem;">
+        <h3 class="card-title">Python</h3>
+        <p><strong>Licença:</strong> PSF License</p>
+        <p><strong>Website:</strong> <a href="https://www.python.org/">https://www.python.org/</a></p>
+        <p>
+          Python é a linguagem de programação usada para desenvolver o Audio2Video.
+          O runtime do Python é incluído no executável gerado pelo PyInstaller.
+        </p>
+        <p>
+          Texto completo da licença: 
+          <a href="https://docs.python.org/3/license.html">PSF License</a>
+        </p>
+      </div>
+
+      <h2 id="distribuicao">Sobre a Distribuição</h2>
+      <p>
+        Os releases do Audio2Video incluem:
+      </p>
+      <ul>
+        <li><strong>Código do projeto:</strong> Licença MIT</li>
+        <li><strong>Binários FFmpeg:</strong> Licença LGPL 2.1+</li>
+        <li><strong>Runtime Python:</strong> Licença PSF</li>
+        <li><strong>Bibliotecas Qt (PySide6):</strong> Licença LGPL 3.0</li>
+      </ul>
+      <p>
+        A pasta <code>LICENSES/</code> no pacote de distribuição contém 
+        os textos completos das licenças de terceiros.
+      </p>
+
+      <div class="alert alert-success" style="margin-top: 2rem;">
+        <strong>✅ Uso Comercial</strong><br>
+        Todas as licenças utilizadas (MIT, LGPL, PSF) permitem uso comercial. 
+        Você pode usar o Audio2Video para qualquer finalidade.
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-copy">
+          Audio2Video © 2024 - Licença MIT<br>
+          <small>Feito no Brasil 🇧🇷</small>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/SEU-USUARIO/audio-converter">GitHub</a>
+          <a href="licenses.html">Licenças</a>
+          <a href="faq.html#privacidade">Privacidade</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

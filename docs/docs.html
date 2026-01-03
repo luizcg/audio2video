@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Documentação do Audio2Video. Aprenda a usar, configurar e resolver problemas.">
+  <title>Documentação - Audio2Video</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <span>🎵</span>
+        <span>Audio2Video</span>
+      </a>
+      <button class="nav-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="navbar-nav">
+        <li><a href="index.html">Início</a></li>
+        <li><a href="download.html">Baixar</a></li>
+        <li><a href="docs.html" class="active">Documentação</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="contributing.html">Contribuir</a></li>
+        <li><a href="licenses.html">Licenças</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Documentation -->
+  <section class="section">
+    <div class="container content">
+      <h1>Documentação</h1>
+      <p>Guia completo para usar o Audio2Video.</p>
+
+      <h2 id="como-usar">Como Usar</h2>
+      
+      <h3>Passo 1: Selecionar a Imagem de Capa</h3>
+      <p>
+        A imagem de capa será o fundo do seu vídeo. Clique no botão 
+        <strong>"Selecionar imagem de capa..."</strong> e escolha uma imagem.
+      </p>
+      <p>Formatos suportados: JPG, JPEG, PNG, BMP, GIF, WEBP</p>
+      <div class="alert alert-info">
+        <strong>💡 Dica:</strong> Use uma imagem com resolução de pelo menos 1280x720 pixels para melhor qualidade.
+      </div>
+
+      <h3>Passo 2: Adicionar Arquivos de Áudio</h3>
+      <p>Você tem duas opções para adicionar áudios:</p>
+      <ul>
+        <li><strong>Clique no botão "Adicionar áudios..."</strong> e selecione os arquivos</li>
+        <li><strong>Arraste e solte</strong> os arquivos ou pastas diretamente na janela</li>
+      </ul>
+      <p>Formatos suportados: MP3, M4A, WAV, AAC, FLAC, OGG, WMA, OPUS</p>
+
+      <h3>Passo 3: Configurar a Pasta de Saída (Opcional)</h3>
+      <p>
+        Por padrão, os vídeos são salvos em <code>Desktop\Audio2Video_Exports</code>.
+        Você pode alterar clicando no botão <strong>"Alterar pasta..."</strong>.
+      </p>
+
+      <h3>Passo 4: Iniciar a Conversão</h3>
+      <p>
+        Clique no botão <strong>"▶ Iniciar"</strong>. Você verá o progresso de cada arquivo na tabela.
+        Quando terminar, os vídeos estarão na pasta de saída.
+      </p>
+
+      <h2 id="configuracoes">Configurações</h2>
+
+      <h3>Pasta de Saída</h3>
+      <p>
+        O aplicativo lembra a última pasta de saída usada. Você pode alterá-la a qualquer momento.
+      </p>
+
+      <h3>Abrir Pasta ao Finalizar</h3>
+      <p>
+        Marque a opção <strong>"Abrir pasta ao finalizar"</strong> para que o Windows Explorer
+        abra automaticamente a pasta de saída quando todas as conversões terminarem.
+      </p>
+
+      <h3>Painel de Logs</h3>
+      <p>
+        Clique em <strong>"Logs"</strong> para expandir o painel e ver detalhes do processo.
+        Você pode:
+      </p>
+      <ul>
+        <li><strong>Copiar:</strong> Copiar todo o conteúdo dos logs para a área de transferência</li>
+        <li><strong>Salvar:</strong> Salvar os logs em um arquivo de texto</li>
+        <li><strong>Limpar:</strong> Limpar o conteúdo dos logs</li>
+      </ul>
+
+      <h2 id="especificacoes">Especificações do Vídeo</h2>
+      
+      <div class="table-responsive">
+        <table>
+          <tr>
+            <th>Propriedade</th>
+            <th>Valor</th>
+          </tr>
+          <tr>
+            <td>Formato</td>
+            <td>MPEG (.mpg)</td>
+          </tr>
+          <tr>
+            <td>Codec de Vídeo</td>
+            <td>MPEG-2</td>
+          </tr>
+          <tr>
+            <td>Codec de Áudio</td>
+            <td>MP2</td>
+          </tr>
+          <tr>
+            <td>Resolução</td>
+            <td>1280x720 (HD)</td>
+          </tr>
+          <tr>
+            <td>Taxa de Quadros</td>
+            <td>30 FPS</td>
+          </tr>
+        </table>
+      </div>
+
+      <h2 id="solucao-de-problemas">Solução de Problemas</h2>
+
+      <h3>❌ "FFmpeg não encontrado"</h3>
+      <p>
+        Este erro indica que os arquivos do FFmpeg não foram encontrados.
+        Na versão portátil, eles devem estar na pasta <code>bin/</code> junto com o executável.
+      </p>
+      <p><strong>Solução:</strong> Baixe novamente o aplicativo e certifique-se de extrair todos os arquivos.</p>
+
+      <h3>❌ Conversão falha com erro</h3>
+      <p>Verifique se:</p>
+      <ul>
+        <li>O arquivo de áudio não está corrompido</li>
+        <li>A imagem de capa é um formato válido</li>
+        <li>Há espaço suficiente no disco</li>
+        <li>Você tem permissão de escrita na pasta de saída</li>
+      </ul>
+
+      <h3>❌ Barra de progresso não atualiza</h3>
+      <p>
+        Em alguns casos raros, a barra pode não atualizar corretamente, mas a conversão
+        continua funcionando. Aguarde o status mudar para "Concluído".
+      </p>
+
+      <h3>❌ Vídeo sem som</h3>
+      <p>
+        Verifique se o arquivo de áudio original possui som e não está corrompido.
+        Tente reproduzi-lo em outro player antes de converter.
+      </p>
+
+      <h3>❌ Caracteres estranhos no nome do arquivo</h3>
+      <p>
+        O aplicativo suporta acentos e caracteres especiais, mas alguns caracteres
+        podem causar problemas. Tente renomear o arquivo removendo caracteres especiais.
+      </p>
+
+      <div class="alert alert-info" style="margin-top: 2rem;">
+        <strong>📧 Ainda com problemas?</strong><br>
+        Abra uma <a href="https://github.com/SEU-USUARIO/audio-converter/issues">issue no GitHub</a> 
+        descrevendo o problema e anexe os logs do aplicativo.
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-copy">
+          Audio2Video © 2024 - Licença MIT<br>
+          <small>Feito no Brasil 🇧🇷</small>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/SEU-USUARIO/audio-converter">GitHub</a>
+          <a href="licenses.html">Licenças</a>
+          <a href="faq.html#privacidade">Privacidade</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

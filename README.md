@@ -1,6 +1,13 @@
 # Conversor de Áudio para Vídeo
 
+[![Download](https://img.shields.io/github/v/release/SEU-USUARIO/audio-converter?label=Download&style=for-the-badge)](https://github.com/SEU-USUARIO/audio-converter/releases/latest)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+
 Aplicativo desktop que converte arquivos de áudio em vídeos MPEG, utilizando uma imagem de capa como fundo.
+
+🌐 **Website:** [https://SEU-USUARIO.github.io/audio-converter/](https://SEU-USUARIO.github.io/audio-converter/)
+
+⬇️ **Download:** [Última versão para Windows](https://github.com/SEU-USUARIO/audio-converter/releases/latest)
 
 ## Funcionalidades
 

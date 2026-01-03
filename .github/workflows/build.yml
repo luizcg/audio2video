@@ -1,0 +1,108 @@
+name: Build Windows Executable
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+      
+      - name: Download FFmpeg
+        run: |
+          $ffmpegUrl = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+          $zipPath = "ffmpeg.zip"
+          
+          Write-Host "Downloading FFmpeg..."
+          Invoke-WebRequest -Uri $ffmpegUrl -OutFile $zipPath
+          
+          Write-Host "Extracting FFmpeg..."
+          Expand-Archive -Path $zipPath -DestinationPath "ffmpeg_temp"
+          
+          $ffmpegDir = Get-ChildItem -Path "ffmpeg_temp" -Directory | Select-Object -First 1
+          
+          Write-Host "Copying binaries to bin/..."
+          Copy-Item "$($ffmpegDir.FullName)\bin\ffmpeg.exe" -Destination "bin\"
+          Copy-Item "$($ffmpegDir.FullName)\bin\ffprobe.exe" -Destination "bin\"
+          
+          Write-Host "Cleaning up..."
+          Remove-Item -Recurse -Force "ffmpeg_temp"
+          Remove-Item $zipPath
+          
+          Write-Host "FFmpeg setup complete!"
+          Get-ChildItem "bin\"
+        shell: pwsh
+      
+      - name: Build with PyInstaller
+        run: pyinstaller Audio2Video.spec --noconfirm
+      
+      - name: Get version from tag
+        id: version
+        run: |
+          if ("${{ github.ref }}" -match "refs/tags/(.+)") {
+            $version = $matches[1]
+          } else {
+            $version = "dev"
+          }
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+      
+      - name: Create portable ZIP
+        run: |
+          $zipName = "Audio2Video_Portable_${{ steps.version.outputs.VERSION }}.zip"
+          Compress-Archive -Path "dist\Audio2Video\*" -DestinationPath "dist\$zipName"
+          Write-Host "Created: dist\$zipName"
+        shell: pwsh
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Audio2Video-Windows-${{ steps.version.outputs.VERSION }}
+          path: dist/Audio2Video_Portable_*.zip
+      
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/Audio2Video_Portable_*.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            ## Conversor de Áudio para Vídeo ${{ steps.version.outputs.VERSION }}
+            
+            ### Download
+            Baixe o arquivo ZIP abaixo e extraia em qualquer pasta.
+            
+            ### Como usar
+            1. Execute `Audio2Video.exe`
+            2. Selecione uma imagem de capa
+            3. Adicione seus arquivos de áudio
+            4. Clique em "Iniciar"
+            
+            ### Requisitos
+            - Windows 10/11 (64-bit)
+            - Nenhuma instalação adicional necessária
+            
+            ### Aviso
+            O Windows pode exibir um aviso do SmartScreen na primeira execução.
+            Clique em "Mais informações" → "Executar assim mesmo".
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
