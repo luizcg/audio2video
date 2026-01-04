@@ -36,7 +36,7 @@ env/
 
 # PyInstaller
 *.manifest
-*.spec
+# Note: Audio2Video.spec is needed for builds, so it's NOT ignored
 
 # FFmpeg binaries (user must provide)
 bin/ffmpeg
