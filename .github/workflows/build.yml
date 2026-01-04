@@ -50,8 +50,19 @@ jobs:
           Get-ChildItem "bin\"
         shell: pwsh
       
+      - name: Verify files before build
+        run: |
+          Write-Host "Current directory:"
+          Get-Location
+          Write-Host "`nFiles in current directory:"
+          Get-ChildItem
+          Write-Host "`nChecking for spec file:"
+          Test-Path "Audio2Video.spec"
+        shell: pwsh
+      
       - name: Build with PyInstaller
         run: pyinstaller Audio2Video.spec --noconfirm
+        shell: pwsh
       
       - name: Get version from tag
         id: version
